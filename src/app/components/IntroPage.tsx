@@ -156,11 +156,28 @@ export default function IntroPage({ onEnter }: IntroPageProps) {
     if (title) {
       const letters = title.textContent?.split('');
       title.innerHTML = '';
+      
+      // MODIFICAÇÃO AQUI: Lógica alterada para garantir quebra de linha no mobile
       letters?.forEach((letter) => {
-        const span = document.createElement('span');
-        span.textContent = letter === ' ' ? '\u00A0' : letter;
-        span.style.display = 'inline-block';
-        title.appendChild(span);
+        if (letter === ' ') {
+          // Se for espaço: Adiciona <br> visível só no mobile
+          const br = document.createElement('br');
+          br.className = 'block md:hidden';
+          title.appendChild(br);
+
+          // E mantém o espaço normal (visível só no desktop)
+          const span = document.createElement('span');
+          span.innerHTML = '&nbsp;';
+          span.style.display = 'inline-block';
+          span.className = 'hidden md:inline-block'; 
+          title.appendChild(span);
+        } else {
+          // Letras normais
+          const span = document.createElement('span');
+          span.textContent = letter;
+          span.style.display = 'inline-block';
+          title.appendChild(span);
+        }
       });
 
       gsap.from(title.children, {
@@ -286,7 +303,8 @@ export default function IntroPage({ onEnter }: IntroPageProps) {
       <canvas ref={canvasRef} className="absolute inset-0" />
       
       <div className="intro-content absolute inset-0 flex flex-col items-center justify-center text-white z-10 px-4">
-        <h1 className="intro-title text-5xl md:text-8xl font-bold mb-6 tracking-wider text-center">
+        {/* MODIFICAÇÃO: Ajustado text-5xl para text-4xl no mobile para evitar quebra interna da palavra CORDEIRO */}
+        <h1 className="intro-title text-4xl sm:text-5xl md:text-8xl font-bold mb-6 tracking-wider text-center">
           LAURA CORDEIRO
         </h1>
         <p className="intro-subtitle text-xl md:text-3xl mb-16 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent font-bold">
