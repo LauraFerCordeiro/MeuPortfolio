@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { Trophy, FileText, ExternalLink, Download, Sparkles, Star, Rocket, Image as ImageIcon, X } from 'lucide-react';
 import cobemPhoto from '../../../assets/cobemLaura.jpg';
 import cobemCertificate from '../../../assets/cobemCertificated.jpg';
+import redeAsaPdf from '../../../assets/ResumoExpandidoAnaisEnecs.pdf';
 
 const awards = [
   {
@@ -27,7 +28,7 @@ const awards = [
     description: 'Resumo Expandido publicado nos Anais do II Encontro de Ensino, Cultura e Sociedade (ENECS)',
     icon: FileText,
     color: 'from-purple-500 to-pink-600',
-    pdf: '/resumo-rede-asa.pdf', 
+    pdf: redeAsaPdf, 
     hasDownload: true
   },
   {
