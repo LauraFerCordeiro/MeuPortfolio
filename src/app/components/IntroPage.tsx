@@ -12,6 +12,9 @@ export default function IntroPage({ onEnter }: IntroPageProps) {
   const sceneRef = useRef<THREE.Scene | null>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
   const scrollTimeoutRef = useRef<number | null>(null);
+  
+  // Ref para armazenar a posição inicial do toque (para distinguir clique de arraste)
+  const touchStartRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -96,7 +99,16 @@ export default function IntroPage({ onEnter }: IntroPageProps) {
       mouseRef.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
     };
 
+    // Touch move handler (para interatividade das partículas no mobile)
+    const handleTouchMove = (event: TouchEvent) => {
+      if (event.touches.length > 0) {
+        mouseRef.current.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+        mouseRef.current.y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+      }
+    };
+
     window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
 
     // Animation
     const clock = new THREE.Clock();
@@ -157,22 +169,18 @@ export default function IntroPage({ onEnter }: IntroPageProps) {
       const letters = title.textContent?.split('');
       title.innerHTML = '';
       
-      // MODIFICAÇÃO AQUI: Lógica alterada para garantir quebra de linha no mobile
       letters?.forEach((letter) => {
         if (letter === ' ') {
-          // Se for espaço: Adiciona <br> visível só no mobile
           const br = document.createElement('br');
           br.className = 'block md:hidden';
           title.appendChild(br);
 
-          // E mantém o espaço normal (visível só no desktop)
           const span = document.createElement('span');
           span.innerHTML = '&nbsp;';
           span.style.display = 'inline-block';
           span.className = 'hidden md:inline-block'; 
           title.appendChild(span);
         } else {
-          // Letras normais
           const span = document.createElement('span');
           span.textContent = letter;
           span.style.display = 'inline-block';
@@ -207,7 +215,6 @@ export default function IntroPage({ onEnter }: IntroPageProps) {
         ease: 'power3.out',
       });
 
-      // Floating animation for button
       gsap.to(buttonRef.current, {
         y: -10,
         duration: 2,
@@ -245,6 +252,7 @@ export default function IntroPage({ onEnter }: IntroPageProps) {
     // Cleanup
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('wheel', handleWheel);
       if (scrollTimeoutRef.current) {
@@ -290,30 +298,63 @@ export default function IntroPage({ onEnter }: IntroPageProps) {
       ease: 'power2.in',
     });
 
-    gsap.to(canvasRef.current, {
-      opacity: 0,
-      duration: 1,
-      ease: 'power2.in',
-      onComplete: onEnter,
-    });
+    if (canvasRef.current) {
+      gsap.to(canvasRef.current, {
+        opacity: 0,
+        duration: 1,
+        ease: 'power2.in',
+        onComplete: onEnter,
+      });
+    }
+  };
+
+  // --- LÓGICA MOBILE: DETECTAR TAP vs ARRASTE ---
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Guarda a posição inicial do dedo
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY
+    };
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    // Se for Desktop (tela maior que 768px), ignora essa lógica
+    if (window.innerWidth >= 768) return;
+
+    // Calcula onde o dedo soltou a tela
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+
+    // Calcula a distância percorrida
+    const diffX = Math.abs(touchEndX - touchStartRef.current.x);
+    const diffY = Math.abs(touchEndY - touchStartRef.current.y);
+
+    // Se o movimento for menor que 10 pixels, consideramos um "Clique/Tap"
+    // Se for maior, o usuário estava arrastando/explorando as partículas
+    if (diffX < 10 && diffY < 10) {
+      handleEnter();
+    }
   };
 
   return (
-    <div className="relative w-full h-screen bg-black overflow-hidden">
+    <div 
+      className="relative w-full h-screen bg-black overflow-hidden touch-none"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <canvas ref={canvasRef} className="absolute inset-0" />
       
-      <div className="intro-content absolute inset-0 flex flex-col items-center justify-center text-white z-10 px-4">
-        {/* MODIFICAÇÃO: Ajustado text-5xl para text-4xl no mobile para evitar quebra interna da palavra CORDEIRO */}
-        <h1 className="intro-title text-4xl sm:text-5xl md:text-8xl font-bold mb-6 tracking-wider text-center">
+      <div className="intro-content absolute inset-0 flex flex-col items-center justify-center text-white z-10 px-4 pointer-events-none">
+        <h1 className="intro-title text-4xl sm:text-5xl md:text-8xl font-bold mb-6 tracking-wider text-center pointer-events-auto">
           LAURA CORDEIRO
         </h1>
-        <p className="intro-subtitle text-xl md:text-3xl mb-16 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent font-bold">
+        <p className="intro-subtitle text-xl md:text-3xl mb-16 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent font-bold pointer-events-auto">
           Frontend Developer
         </p>
         <button
           ref={buttonRef}
           onClick={handleEnter}
-          className="group relative px-10 py-5 text-lg font-bold border-2 border-white rounded-full overflow-hidden transition-all duration-300 hover:border-purple-500 hover:scale-110 cursor-pointer"
+          className="group relative px-10 py-5 text-lg font-bold border-2 border-white rounded-full overflow-hidden transition-all duration-300 hover:border-purple-500 hover:scale-110 cursor-pointer pointer-events-auto"
         >
           <span className="relative z-10 group-hover:text-black transition-colors duration-300">
             Entrar no Portfólio →
@@ -321,8 +362,10 @@ export default function IntroPage({ onEnter }: IntroPageProps) {
           <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
         </button>
         
-        <p className="absolute bottom-10 text-sm text-gray-500 animate-pulse">
-          Mova o mouse para interagir • Role para baixo para entrar
+        {/* MODIFICAÇÃO: Texto adaptativo para mobile/desktop */}
+        <p className="absolute bottom-10 text-sm text-gray-500 animate-pulse pointer-events-auto">
+          <span className="hidden md:inline">Mova o mouse para interagir • Role para baixo para entrar</span>
+          <span className="inline md:hidden">Clique para entrar</span>
         </p>
       </div>
     </div>
