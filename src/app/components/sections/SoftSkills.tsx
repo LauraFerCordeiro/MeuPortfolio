@@ -73,120 +73,94 @@ export default function SoftSkills() {
   const cardsRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Detect mobile
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   useEffect(() => {
-    // Skip animations on mobile
     if (isMobile || !cardsRef.current) return;
-    
     const cards = cardsRef.current.querySelectorAll('.skill-card');
-    
     gsap.fromTo(cards,
-      {
-        opacity: 0,
-        y: 60,
-        scale: 0.9,
-      },
-      {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: 0.8,
-        stagger: 0.1,
-        ease: 'power3.out',
-      }
+      { opacity: 0, y: 40, scale: 0.95 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.8, stagger: 0.08, ease: 'power3.out' }
     );
   }, [isMobile]);
 
   return (
-    <section className="w-full min-h-screen md:h-screen flex items-start md:items-center justify-center px-4 md:px-6 py-8 md:py-0 relative overflow-hidden">
-      {/* Animated gradient background */}
+    <section className="w-full min-h-screen md:block flex flex-col items-center px-4 md:px-6 py-12 md:pt-16 md:pb-0 relative overflow-x-hidden">
+      
+      {/* Background simplificado */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
-      <div className="max-w-7xl w-full relative z-10 py-4 md:py-12">
-        {/* Title */}
-        <div className="text-center mb-6 md:mb-12">
-          <h2 className="text-3xl md:text-4xl lg:text-6xl font-black mb-2 md:mb-4">
+      <div className="max-w-7xl mx-auto w-full relative z-10 flex flex-col h-full">
+        
+        {/* Title: pt-2 garante que não seja cortado pelo topo da viewport */}
+        <div className="text-center mb-6 md:mb-8 pt-2">
+          <h2 className="text-3xl md:text-5xl lg:text-6xl font-black mb-2 md:mb-3">
             <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 bg-clip-text text-transparent">
               Soft Skills
             </span>
           </h2>
-          <p className="text-gray-400 text-xs md:text-base lg:text-lg">
+          <p className="text-gray-400 text-xs md:text-sm lg:text-base">
             Habilidades interpessoais que fazem a diferença
           </p>
         </div>
 
-        {/* Skills grid */}
+        {/*
+          Desktop fix:
+          - Removed pb-32/pb-24 that was causing the arrow to overlap cards.
+          - Cards use slightly reduced padding (md:p-4) and icon size (md:w-12 md:h-12)
+            to fit all 9 cards + title within the viewport without needing the
+            huge bottom padding hack.
+          - The arrow lives OUTSIDE this grid in the parent layout, so it sits
+            naturally below the grid with its own clearance.
+        */}
         <div
           ref={cardsRef}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-280px)] overflow-y-auto px-2 md:px-4 pb-4 scrollbar-hide"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 overflow-visible"
         >
-          {softSkills.map((skill, index) => {
+          {softSkills.map((skill) => {
             const Icon = skill.icon;
             return (
               <div
                 key={skill.title}
-                className="skill-card group relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300 overflow-hidden cursor-pointer"
+                className="skill-card group relative bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-5 md:p-4 hover:bg-white/10 transition-all duration-300 cursor-pointer"
               >
-                {/* Gradient overlay on hover */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${skill.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${skill.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-xl`} />
                 
-                {/* Content */}
-                <div className="relative z-10">
-                  {/* Icon */}
-                  <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${skill.color} flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg`}>
-                    <Icon className="w-7 h-7 text-white" />
+                <div className="relative z-10 flex flex-col items-start">
+                  {/* Desktop: slightly smaller icon (md:w-12 md:h-12) to recover vertical space */}
+                  <div className={`w-14 h-14 md:w-12 md:h-12 rounded-xl bg-gradient-to-br ${skill.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-all duration-300 shadow-lg`}>
+                    <Icon className="w-7 h-7 md:w-6 md:h-6 text-white" />
                   </div>
 
-                  {/* Title */}
-                  <h3 className="text-xl font-bold text-white mb-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:from-purple-400 group-hover:to-pink-400 transition-all duration-300">
+                  {/* Desktop: slightly smaller title (md:text-lg) */}
+                  <h3 className="text-lg md:text-lg font-bold text-white mb-1 group-hover:text-pink-400 transition-colors">
                     {skill.title}
                   </h3>
 
-                  {/* Description */}
-                  <p className="text-gray-400 text-sm leading-relaxed">
+                  <p className="text-gray-400 text-sm leading-relaxed line-clamp-3 md:line-clamp-none md:text-xs lg:text-sm">
                     {skill.description}
                   </p>
-                </div>
-
-                {/* Decorative elements */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-white/5 to-transparent rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100" />
-                
-                {/* Shine effect */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 translate-x-full group-hover:translate-x-[-200%] transition-transform duration-1000" />
                 </div>
               </div>
             );
           })}
         </div>
-      </div>
 
-      <style>{`
-        /* Hide scrollbar but keep functionality */
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
+        {/*
+          Spacer that gives the fixed/absolute arrow button enough room
+          so it never overlaps the last row of cards on any desktop viewport.
+          On mobile this collapses (hidden md:block keeps mobile untouched).
+        */}
+        <div className="hidden md:block md:h-20 lg:h-24 shrink-0" />
+      </div>
     </section>
   );
 }
