@@ -15,6 +15,8 @@ export default function MainSite() {
   const [currentSection, setCurrentSection] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  // Trava o swipe/wheel quando um card filho (ex: Experience) está aberto
+  const isChildScrollLocked = useRef(false);
   const mouseRef = useRef({ x: 0, y: 0 });
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -54,6 +56,15 @@ export default function MainSite() {
     };
   }, []);
 
+  // Escuta o evento do Experience (e outros filhos) para travar/liberar swipe
+  useEffect(() => {
+    const handleLock = (e: Event) => {
+      isChildScrollLocked.current = (e as CustomEvent).detail.locked;
+    };
+    window.addEventListener('experience-card-lock', handleLock);
+    return () => window.removeEventListener('experience-card-lock', handleLock);
+  }, []);
+
   // Three.js setup
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -78,10 +89,15 @@ export default function MainSite() {
       new THREE.TorusGeometry(1, 0.4, 16, 100),
     ];
 
+    const sectionsLocal = [
+      { color: '#8b5cf6' }, { color: '#6366f1' }, { color: '#a855f7' },
+      { color: '#f97316' }, { color: '#14b8a6' }, { color: '#eab308' }, { color: '#06b6d4' },
+    ];
+
     geometries.forEach((geometry, index) => {
       const edges = new THREE.EdgesGeometry(geometry);
       const lineMaterial = new THREE.LineBasicMaterial({
-        color: new THREE.Color(sections[index].color),
+        color: new THREE.Color(sectionsLocal[index].color),
         transparent: true,
         opacity: 0.3,
       });
@@ -91,7 +107,7 @@ export default function MainSite() {
       meshesRef.current.push(wireframe as any);
 
       const fillMaterial = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(sections[index].color),
+        color: new THREE.Color(sectionsLocal[index].color),
         transparent: true,
         opacity: 0.05,
         side: THREE.DoubleSide,
@@ -111,7 +127,7 @@ export default function MainSite() {
 
     const particlesMaterial = new THREE.PointsMaterial({
       size: 0.02,
-      color: sections[0].color,
+      color: sectionsLocal[0].color,
       transparent: true,
       opacity: 0.6,
       blending: THREE.AdditiveBlending,
@@ -222,22 +238,19 @@ export default function MainSite() {
   }, [currentSection, isTransitioning]);
 
   // Desktop wheel navigation
-  // Key fix: before navigating, check if the event target is inside a scrollable
-  // child container that hasn't reached its scroll boundary yet.
-  // If so, let the child handle the scroll and don't navigate the page.
   useEffect(() => {
     if (isMobile) return;
 
     let wheelTimeout: number | null = null;
 
     const handleWheel = (e: WheelEvent) => {
-      // Check if the event originated inside a scrollable child element
-      // that still has room to scroll in the direction of the gesture.
+      // Bloqueia se um card filho estiver aberto
+      if (isChildScrollLocked.current) return;
+
       const scrollableChild = (e.target as HTMLElement)?.closest('[data-scrollable]') as HTMLElement | null;
       if (scrollableChild) {
         const atTop    = scrollableChild.scrollTop <= 0 && e.deltaY < 0;
         const atBottom = scrollableChild.scrollTop + scrollableChild.clientHeight >= scrollableChild.scrollHeight - 1 && e.deltaY > 0;
-        // Inner container can still scroll — don't navigate the page
         if (!atTop && !atBottom) return;
       }
 
@@ -261,6 +274,7 @@ export default function MainSite() {
     if (!isMobile) return;
 
     const handleProgrammaticWheel = (e: WheelEvent) => {
+      if (isChildScrollLocked.current) return;
       if (e.deltaY >= 100) navigateToSection('next');
     };
 
@@ -280,6 +294,9 @@ export default function MainSite() {
     if (!isSwipingRef.current || isTransitioning) return;
     isSwipingRef.current = false;
 
+    // Bloqueia navegação enquanto card filho estiver aberto
+    if (isChildScrollLocked.current) return;
+
     const deltaY = touchStartYRef.current - e.changedTouches[0].clientY;
     const deltaX = Math.abs(touchStartXRef.current - e.changedTouches[0].clientX);
     const elapsed = Date.now() - touchStartTimeRef.current;
@@ -288,21 +305,15 @@ export default function MainSite() {
     const threshold = elapsed < 400 ? 40 : 80;
     if (Math.abs(deltaY) < threshold) return;
 
-    // --- NOVA LÓGICA: Verifica se o elemento tocado é um container scrollável ---
     const scrollableChild = (e.target as HTMLElement)?.closest('[data-scrollable]') as HTMLElement | null;
     
     if (scrollableChild) {
       const atTop = scrollableChild.scrollTop <= 2;
       const atBottom = scrollableChild.scrollTop + scrollableChild.clientHeight >= scrollableChild.scrollHeight - 2;
-      
-      // O usuário está arrastando para cima (para ver o final do container interno)
       if (deltaY > 0 && !atBottom) return; 
-      
-      // O usuário está arrastando para baixo (para ver o topo do container interno)
       if (deltaY < 0 && !atTop) return;
     }
 
-    // Comportamento padrão caso não esteja num elemento com scroll próprio
     const scrollEl = document.querySelector('.mobile-section-scroll') as HTMLElement;
     if (scrollEl && !scrollableChild) {
       const atTop = scrollEl.scrollTop <= 2;

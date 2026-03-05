@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { 
-  Calendar, 
+import {
+  Calendar,
   Award,
   Code,
   BookOpen,
@@ -51,7 +51,7 @@ const experiences = [
       { text: 'Desenvolvimento de APIs utilizando React', icon: Code },
       { text: 'Web design com uso de Figma', icon: Palette },
       { text: 'Programação em embarcados como ESP32 e RaspBerry Pi em Python', icon: Cpu },
-      { 
+      {
         text: 'Desenvolvimento de um equipamento médico capaz de visualizar os vasos sanguíneos e identificar vasos obstruídos de pessoas Diabéticas, impedindo uma possível amputação. Software feito com Python.',
         icon: FlaskConical,
         highlight: true
@@ -79,14 +79,21 @@ export default function Experience() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // ─── Avisa o MainSite para travar/liberar swipe quando o card abre/fecha ───
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('experience-card-lock', { detail: { locked: selectedExp !== null } })
+    );
+  }, [selectedExp]);
+
   useEffect(() => {
     if (isMobile || !containerRef.current) return;
-    
+
     if (timelineRef.current && selectedExp === null) {
       const timeline = timelineRef.current.querySelector('.timeline-line');
       const nodes = timelineRef.current.querySelectorAll('.timeline-node-wrapper');
       const finishLine = timelineRef.current.querySelector('.finish-line');
-      
+
       if (timeline) {
         gsap.fromTo(timeline,
           { scaleX: 0 },
@@ -160,42 +167,45 @@ export default function Experience() {
     }
   }, [selectedExp, isMobile]);
 
+  // ─── Bloqueio de wheel/touch/key para desktop quando card aberto ───
+  // (mantido como camada extra de segurança para scroll-jacking por JS)
   useEffect(() => {
-    if (isMobile) {
-      document.body.style.overflow = '';
-      return;
-    }
+    if (isMobile) return;
 
     const handleWheel = (e: WheelEvent) => {
-      if (selectedExp) { e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); return false; }
+      if (!selectedExp) return;
+      const target = e.target as HTMLElement;
+      if (target.closest('.detail-card')) return;
+      e.preventDefault();
+      e.stopPropagation();
     };
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (selectedExp && ['ArrowUp','ArrowDown',' ','PageUp','PageDown'].includes(e.key)) {
-        e.preventDefault(); e.stopPropagation(); return false;
+      if (!selectedExp) return;
+      if (['ArrowUp', 'ArrowDown', ' ', 'PageUp', 'PageDown'].includes(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
       }
     };
+
     const handleTouchMove = (e: TouchEvent) => {
-      if (selectedExp) { e.preventDefault(); e.stopPropagation(); return false; }
+      if (!selectedExp) return;
+      const target = e.target as HTMLElement;
+      if (target.closest('.detail-card')) return;
+      e.preventDefault();
+      e.stopPropagation();
     };
 
     if (selectedExp) {
-      document.addEventListener('wheel', handleWheel, { passive: false, capture: true });
-      window.addEventListener('wheel', handleWheel, { passive: false, capture: true });
-      document.body.addEventListener('wheel', handleWheel, { passive: false, capture: true });
-      document.addEventListener('keydown', handleKeyDown, { passive: false, capture: true });
-      document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+      document.addEventListener('wheel', handleWheel, { passive: false });
+      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
     }
 
     return () => {
-      document.removeEventListener('wheel', handleWheel, { capture: true });
-      window.removeEventListener('wheel', handleWheel, { capture: true });
-      document.body.removeEventListener('wheel', handleWheel, { capture: true });
-      document.removeEventListener('keydown', handleKeyDown, { capture: true });
-      document.removeEventListener('touchmove', handleTouchMove, { capture: true });
-      document.body.style.overflow = '';
+      document.removeEventListener('wheel', handleWheel);
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('touchmove', handleTouchMove);
     };
   }, [selectedExp, isMobile]);
 
@@ -220,7 +230,7 @@ export default function Experience() {
           x: targetX,
           duration: Math.max(0.8, distance / 400),
           ease: 'power2.inOut',
-          onUpdate: function() {
+          onUpdate: function () {
             const progress = this.progress();
             const wobble = Math.sin(progress * 20) * 3;
             if (characterRef.current) {
@@ -366,7 +376,7 @@ export default function Experience() {
           x: targetX,
           duration: Math.max(0.8, distance / 400),
           ease: 'power2.inOut',
-          onUpdate: function() {
+          onUpdate: function () {
             const progress = this.progress();
             const wobble = Math.sin(progress * 20) * 3;
             if (characterRef.current) {
@@ -441,7 +451,7 @@ export default function Experience() {
             )}
           </div>
 
-          {/* ═══ MOBILE TIMELINE — do subtítulo até antes da seta ═══ */}
+          {/* ═══ MOBILE TIMELINE ═══ */}
           {!selectedExp && (
             <div className="flex-1 timeline-view relative" style={{ marginTop: '28px', marginBottom: '104px' }}>
 
@@ -483,7 +493,7 @@ export default function Experience() {
                 </svg>
               </div>
 
-              {/* mobile-track: distribui nós de cima a baixo no espaço disponível */}
+              {/* mobile-track */}
               <div
                 className="mobile-track absolute inset-0 flex flex-col justify-between"
                 style={{ paddingLeft: '72px', paddingTop: '60px', paddingBottom: '8px' }}
@@ -559,7 +569,7 @@ export default function Experience() {
                       <div className="absolute left-0 top-0 w-2 h-full bg-gradient-to-b from-gray-400 to-gray-700 rounded-full" />
                       <div className="absolute left-2 top-1.5 w-9 h-8 grid grid-cols-4 grid-rows-3 overflow-hidden rounded-r-md shadow-xl animate-wave">
                         {[...Array(12)].map((_, i) => (
-                          <div key={i} className={`${ (i % 2 === 0 && Math.floor(i / 4) % 2 === 0) || (i % 2 === 1 && Math.floor(i / 4) % 2 === 1) ? 'bg-white' : 'bg-gray-900' }`} />
+                          <div key={i} className={`${(i % 2 === 0 && Math.floor(i / 4) % 2 === 0) || (i % 2 === 1 && Math.floor(i / 4) % 2 === 1) ? 'bg-white' : 'bg-gray-900'}`} />
                         ))}
                       </div>
                       <div className="absolute left-2 top-1.5 w-9 h-8 bg-yellow-400 blur-lg opacity-40 animate-pulse" />
@@ -580,21 +590,27 @@ export default function Experience() {
             </div>
           )}
 
-                    {/* MOBILE DETAIL CARD */}
+          {/* MOBILE DETAIL CARD */}
           {selectedExperience && (
-            <div className="detail-card relative opacity-0">
+            <div className="detail-card relative opacity-0 flex flex-col" style={{ maxHeight: 'calc(100vh - 160px)' }}>
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 mb-4 px-4 py-2.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/40 rounded-2xl active:scale-95 transition-transform"
+                className="inline-flex items-center gap-2 mb-4 px-4 py-2.5 w-max bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/40 rounded-2xl active:scale-95 transition-transform flex-shrink-0"
               >
                 <ArrowLeft className="w-4 h-4 text-purple-300" />
                 <span className="text-white font-bold text-sm">Voltar à Linha do Tempo</span>
               </button>
 
-              <div className="relative bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 overflow-hidden shadow-2xl">
-                <div className={`absolute inset-0 bg-gradient-to-br ${selectedExperience.color} opacity-[0.06] rounded-3xl`} />
+              {/* Card com scroll interno — wrapper externo segura o fundo, interno scrolla */}
+              <div className="relative bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
+                {/* Fundo gradiente fixo — fica fora do scroll */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${selectedExperience.color} opacity-[0.06] pointer-events-none`} />
 
-                <div className="relative z-10">
+                {/* Área scrollável */}
+                <div
+                  className="relative z-10 overflow-y-auto p-5 pr-2"
+                  style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch', maxHeight: 'calc(100vh - 230px)' }}
+                >
                   <div className="flex items-start gap-3 mb-5">
                     <div className="relative flex-shrink-0">
                       <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${selectedExperience.color} flex items-center justify-center p-1.5 shadow-xl`}>
@@ -635,15 +651,13 @@ export default function Experience() {
                       return (
                         <div
                           key={idx}
-                          className={`flex items-start gap-2.5 p-2.5 rounded-xl ${
-                            achievement.highlight
+                          className={`flex items-start gap-2.5 p-2.5 rounded-xl ${achievement.highlight
                               ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/30'
                               : 'bg-white/[0.03] border border-white/[0.07]'
-                          }`}
+                            }`}
                         >
-                          <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                            achievement.highlight ? 'bg-gradient-to-br from-yellow-500 to-orange-600' : 'bg-gradient-to-br from-purple-500 to-pink-600'
-                          }`}>
+                          <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${achievement.highlight ? 'bg-gradient-to-br from-yellow-500 to-orange-600' : 'bg-gradient-to-br from-purple-500 to-pink-600'
+                            }`}>
                             <AchIcon className="w-3 h-3 text-white" />
                           </div>
                           <p className={`text-xs leading-relaxed flex-1 ${achievement.highlight ? 'text-yellow-100 font-semibold' : 'text-gray-300'}`}>
@@ -672,7 +686,7 @@ export default function Experience() {
   }
 
   // ─────────────────────────────────────────
-  // DESKTOP RENDER — 100% UNCHANGED
+  // DESKTOP RENDER — UNCHANGED
   // ─────────────────────────────────────────
   return (
     <section className="w-full min-h-screen md:h-screen flex items-start md:items-center justify-center px-4 md:px-6 py-8 md:py-0 relative overflow-hidden">
@@ -725,11 +739,10 @@ export default function Experience() {
                     {[...Array(12)].map((_, i) => (
                       <div
                         key={i}
-                        className={`${
-                          (i % 2 === 0 && Math.floor(i / 4) % 2 === 0) ||
-                          (i % 2 === 1 && Math.floor(i / 4) % 2 === 1)
+                        className={`${(i % 2 === 0 && Math.floor(i / 4) % 2 === 0) ||
+                            (i % 2 === 1 && Math.floor(i / 4) % 2 === 1)
                             ? 'bg-white' : 'bg-gray-900'
-                        }`}
+                          }`}
                       />
                     ))}
                   </div>
@@ -784,9 +797,8 @@ export default function Experience() {
                 data-node-id={exp.id}
               >
                 <div
-                  className={`relative cursor-pointer transition-all duration-300 ${
-                    hoveredNode === exp.id ? 'scale-125' : 'scale-100'
-                  } ${isMoving ? 'pointer-events-none' : ''}`}
+                  className={`relative cursor-pointer transition-all duration-300 ${hoveredNode === exp.id ? 'scale-125' : 'scale-100'
+                    } ${isMoving ? 'pointer-events-none' : ''}`}
                   onClick={() => handleNodeClick(exp.id, index)}
                   onMouseEnter={() => setHoveredNode(exp.id)}
                   onMouseLeave={() => setHoveredNode(null)}
@@ -829,7 +841,10 @@ export default function Experience() {
               <span className="text-white font-bold text-lg">Voltar à Linha do Tempo</span>
             </button>
 
-            <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl border-2 border-white/20 rounded-3xl p-6 overflow-hidden shadow-2xl">
+            <div
+              className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl border-2 border-white/20 rounded-3xl p-6 overflow-hidden shadow-2xl overflow-y-auto"
+              style={{ maxHeight: 'calc(100vh - 220px)', overscrollBehavior: 'contain' }}
+            >
               <div className={`absolute inset-0 bg-gradient-to-br ${selectedExperience.color} ${selectedExperience.id === 2 ? 'opacity-5' : 'opacity-10'}`} />
               <div className="absolute -top-20 -right-20 w-60 h-60 bg-white/5 rounded-full blur-3xl" />
 
@@ -875,20 +890,17 @@ export default function Experience() {
                       return (
                         <div
                           key={idx}
-                          className={`group/item flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${
-                            achievement.highlight
+                          className={`group/item flex items-center gap-3 p-3 rounded-xl transition-all duration-300 ${achievement.highlight
                               ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/40'
                               : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                          }`}
+                            }`}
                         >
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                            achievement.highlight ? 'bg-gradient-to-br from-yellow-500 to-orange-600' : 'bg-gradient-to-br from-purple-500 to-pink-600'
-                          } group-hover/item:scale-110 transition-transform duration-300`}>
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${achievement.highlight ? 'bg-gradient-to-br from-yellow-500 to-orange-600' : 'bg-gradient-to-br from-purple-500 to-pink-600'
+                            } group-hover/item:scale-110 transition-transform duration-300`}>
                             <AchIcon className="w-4 h-4 text-white" />
                           </div>
-                          <p className={`text-sm md:text-base text-left leading-relaxed flex-1 ${
-                            achievement.highlight ? 'text-yellow-50 font-semibold' : 'text-gray-300'
-                          }`}>
+                          <p className={`text-sm md:text-base text-left leading-relaxed flex-1 ${achievement.highlight ? 'text-yellow-50 font-semibold' : 'text-gray-300'
+                            }`}>
                             {achievement.text}
                           </p>
                         </div>
