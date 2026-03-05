@@ -15,7 +15,7 @@ const contactInfo = [
     displayValue: '+55 16 99120-3005',
     href: 'https://wa.me/5516991203005',
     color: 'from-emerald-500 to-teal-600',
-    description: 'WhatsApp disponível',
+    accent: '#10b981',
   },
   {
     icon: Mail,
@@ -24,7 +24,7 @@ const contactInfo = [
     displayValue: 'laurafercordeiro@gmail.com',
     href: 'mailto:laurafercordeiro@gmail.com',
     color: 'from-purple-500 to-pink-600',
-    description: 'Respondo em até 24h',
+    accent: '#a855f7',
   },
   {
     icon: Linkedin,
@@ -33,7 +33,7 @@ const contactInfo = [
     displayValue: 'Laura Cordeiro',
     href: 'https://www.linkedin.com/in/laura-cordeiro-9983a8324',
     color: 'from-blue-500 to-blue-700',
-    description: 'Vamos nos conectar',
+    accent: '#3b82f6',
   },
   {
     icon: MapPin,
@@ -42,7 +42,7 @@ const contactInfo = [
     displayValue: 'São Carlos, Brasil',
     href: null,
     color: 'from-orange-500 to-red-600',
-    description: 'Trabalho remoto ou híbrido',
+    accent: '#f97316',
   },
   {
     icon: Github,
@@ -51,158 +51,65 @@ const contactInfo = [
     displayValue: '@LauraFerCordeiro',
     href: 'https://github.com/LauraFerCordeiro',
     color: 'from-indigo-500 to-blue-600',
-    description: 'Confira meu código',
+    accent: '#6366f1',
   },
 ];
 
 export default function About({ onNavigate }: AboutProps) {
-  const nameRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLDivElement>(null);
-  const glitchRef = useRef<HTMLDivElement>(null);
-  const orbsRef = useRef<HTMLDivElement>(null);
-  const contactCardsRef = useRef<HTMLDivElement>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const rightRef = useRef<HTMLDivElement>(null);
+  const nameRef = useRef<HTMLDivElement>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Detect mobile
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   useEffect(() => {
-    // Skip animations on mobile
     if (isMobile) return;
 
-    // Name entrance animation
-    if (nameRef.current) {
-      const letters = nameRef.current.querySelectorAll('.letter');
-      
-      gsap.fromTo(letters,
-        {
-          opacity: 0,
-          y: 100,
-          rotationX: -90,
-          scale: 0,
-        },
-        {
-          opacity: 1,
-          y: 0,
-          rotationX: 0,
-          scale: 1,
-          stagger: 0.05,
-          duration: 1,
-          ease: 'elastic.out(1, 0.5)',
-          delay: 0.2,
-        }
-      );
-    }
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
-    // Image entrance animation
-    if (imageRef.current) {
-      gsap.fromTo(imageRef.current,
-        {
-          opacity: 0,
-          scale: 0.5,
-          rotationY: 180,
-        },
-        {
-          opacity: 1,
-          scale: 1,
-          rotationY: 0,
-          duration: 1.5,
-          ease: 'elastic.out(1, 0.5)',
-          delay: 0.5,
-        }
-      );
-    }
-
-    // Text entrance animation
-    if (textRef.current) {
-      const paragraphs = textRef.current.querySelectorAll('.text-paragraph');
-      gsap.fromTo(paragraphs,
-        {
-          opacity: 0,
-          x: -50,
-          rotationX: -30,
-        },
-        {
-          opacity: 1,
-          x: 0,
-          rotationX: 0,
-          stagger: 0.2,
-          duration: 1,
-          ease: 'power3.out',
-          delay: 0.8,
-        }
-      );
-    }
-
-    // Glitch effect on title
-    if (glitchRef.current) {
-      const glitchInterval = setInterval(() => {
-        gsap.to(glitchRef.current, {
-          x: Math.random() * 4 - 2,
-          duration: 0.05,
-          yoyo: true,
-          repeat: 3,
-        });
-      }, 3000);
-
-      return () => clearInterval(glitchInterval);
-    }
-
-    // Floating orbs animation
-    if (orbsRef.current) {
-      const orbs = orbsRef.current.querySelectorAll('.floating-orb');
-      orbs.forEach((orb, index) => {
-        gsap.to(orb, {
-          y: Math.random() * 30 - 15,
-          x: Math.random() * 30 - 15,
-          duration: 3 + index * 0.5,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: index * 0.3,
-        });
-      });
-    }
+    // Name lines
+    tl.fromTo('.name-line',
+      { opacity: 0, x: -60 },
+      { opacity: 1, x: 0, duration: 0.9, stagger: 0.12 }
+    )
+    // Role badge
+    .fromTo('.role-badge',
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.6 }, '-=0.4'
+    )
+    // Image
+    .fromTo(imageRef.current,
+      { opacity: 0, scale: 1.08, clipPath: 'inset(100% 0% 0% 0%)' },
+      { opacity: 1, scale: 1, clipPath: 'inset(0% 0% 0% 0%)', duration: 1.1, ease: 'power4.out' },
+      '-=0.7'
+    )
+    // Right column content
+    .fromTo('.bio-block',
+      { opacity: 0, y: 30 },
+      { opacity: 1, y: 0, duration: 0.7, stagger: 0.15 },
+      '-=0.6'
+    )
+    // Contact chips
+    .fromTo('.contact-chip',
+      { opacity: 0, x: 40 },
+      { opacity: 1, x: 0, duration: 0.5, stagger: 0.07 },
+      '-=0.3'
+    )
+    // Stats
+    .fromTo('.stat-item',
+      { opacity: 0, scale: 0.8 },
+      { opacity: 1, scale: 1, duration: 0.5, stagger: 0.1 },
+      '-=0.2'
+    );
   }, [isMobile]);
-
-  // Mouse move parallax effect
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const { clientX, clientY } = e;
-    const { innerWidth, innerHeight } = window;
-    const x = (clientX / innerWidth - 0.5) * 20;
-    const y = (clientY / innerHeight - 0.5) * 20;
-    setMousePosition({ x, y });
-
-    if (imageRef.current) {
-      gsap.to(imageRef.current, {
-        x: -x * 0.5,
-        y: -y * 0.5,
-        duration: 0.5,
-        ease: 'power2.out',
-      });
-    }
-
-    if (textRef.current) {
-      gsap.to(textRef.current, {
-        x: x * 0.3,
-        y: y * 0.3,
-        duration: 0.5,
-        ease: 'power2.out',
-      });
-    }
-  };
 
   const handleCopy = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
@@ -210,276 +117,265 @@ export default function About({ onNavigate }: AboutProps) {
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
-  const name = 'LAURA CORDEIRO';
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isMobile || !imageRef.current) return;
+    const { clientX, clientY } = e;
+    const { innerWidth, innerHeight } = window;
+    const x = (clientX / innerWidth - 0.5) * 12;
+    const y = (clientY / innerHeight - 0.5) * 12;
+    gsap.to(imageRef.current, { x: -x * 0.4, y: -y * 0.4, duration: 0.8, ease: 'power2.out' });
+  };
 
   return (
-    <section 
-      className="w-full min-h-screen md:h-screen flex items-center justify-center px-4 md:px-6 py-8 md:py-0 relative overflow-hidden"
+    <section
+      className="w-full min-h-screen md:h-screen flex items-center justify-center px-4 md:px-8 lg:px-12 py-8 md:py-0 relative overflow-hidden"
       onMouseMove={handleMouseMove}
     >
-      {/* Animated grid background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(0deg, transparent 24%, rgba(139, 92, 246, .3) 25%, rgba(139, 92, 246, .3) 26%, transparent 27%, transparent 74%, rgba(139, 92, 246, .3) 75%, rgba(139, 92, 246, .3) 76%, transparent 77%, transparent),
-            linear-gradient(90deg, transparent 24%, rgba(139, 92, 246, .3) 25%, rgba(139, 92, 246, .3) 26%, transparent 27%, transparent 74%, rgba(139, 92, 246, .3) 75%, rgba(139, 92, 246, .3) 76%, transparent 77%, transparent)
-          `,
-          backgroundSize: '50px 50px',
-          animation: 'grid-move 20s linear infinite',
+      {/* ── Background ── */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Subtle grid */}
+        <div className="absolute inset-0 opacity-[0.04]" style={{
+          backgroundImage: `linear-gradient(rgba(139,92,246,1) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,1) 1px, transparent 1px)`,
+          backgroundSize: '48px 48px',
         }} />
+        {/* Ambient glows */}
+        <div className="absolute -top-32 -left-32 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px]" />
+        <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-pink-600/10 rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-indigo-600/5 rounded-full blur-[80px]" />
       </div>
 
-      {/* Floating orbs */}
-      <div ref={orbsRef} className="absolute inset-0 pointer-events-none">
-        <div className="floating-orb absolute top-1/4 left-1/4 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl" />
-        <div className="floating-orb absolute top-1/3 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl" />
-        <div className="floating-orb absolute bottom-1/4 left-1/3 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl" />
-      </div>
+      {/* ── Main layout ── */}
+      <div ref={containerRef} className="relative z-10 w-full max-w-7xl mx-auto">
 
-      <div className="max-w-7xl w-full relative z-10">
-        {/* Holographic name */}
-        <div ref={nameRef} className="mb-4 md:mb-8 perspective-1000">
-          <div className="flex flex-wrap justify-center gap-1 md:gap-2 lg:gap-3">
-            {name.split('').map((letter, index) => (
-              <span
-                key={index}
-                className="letter inline-block text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-black relative"
-                style={{
-                  background: 'linear-gradient(45deg, #8b5cf6, #ec4899, #8b5cf6)',
-                  backgroundSize: '200% 200%',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  animation: `gradient-shift ${3 + index * 0.1}s ease infinite`,
-                  textShadow: `
-                    0 0 10px rgba(139, 92, 246, 0.5),
-                    0 0 20px rgba(236, 72, 153, 0.3),
-                    0 0 30px rgba(139, 92, 246, 0.2)
-                  `,
-                }}
-              >
-                {letter === ' ' ? '\u00A0' : letter}
-              </span>
-            ))}
+        {/* MOBILE layout */}
+        <div className="md:hidden space-y-6">
+          <div className="text-center">
+            <div className="text-4xl font-black tracking-tight text-white mb-1">LAURA</div>
+            <div className="text-4xl font-black tracking-tight" style={{ WebkitTextStroke: '1px rgba(168,85,247,0.8)', color: 'transparent' }}>CORDEIRO</div>
+            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-semibold">
+              <Code2 className="w-3 h-3" /> FullStack Developer & Creative Coder
+            </div>
+          </div>
+          <img src={profileImg} alt="Laura Cordeiro" className="w-40 h-40 object-cover rounded-2xl mx-auto border-2 border-purple-500/30" />
+          <p className="text-gray-300 text-sm leading-relaxed text-center px-2">
+            Desenvolvedora fullstack apaixonada por criar experiências digitais que <span className="text-purple-400 font-semibold">surpreendem</span> e <span className="text-pink-400 font-semibold">encantam</span>.
+          </p>
+          <div className="space-y-2">
+            {contactInfo.map((info, index) => {
+              const Icon = info.icon;
+              return (
+                <div key={info.label} className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5">
+                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${info.color} flex items-center justify-center flex-shrink-0`}>
+                    <Icon className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[10px] text-gray-500 uppercase tracking-widest">{info.label}</div>
+                    <div className="text-white text-xs font-medium truncate">{info.displayValue}</div>
+                  </div>
+                  <button onClick={() => handleCopy(info.value, index)} className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center">
+                    {copiedIndex === index ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3 text-white/70" />}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Glitch subtitle */}
-        <h2
-          ref={glitchRef}
-          className="text-lg md:text-2xl lg:text-3xl font-bold text-center mb-12 relative"
-          style={{
-            color: '#fff',
-            textShadow: `
-              2px 2px 0px rgba(139, 92, 246, 0.7),
-              -2px -2px 0px rgba(236, 72, 153, 0.7)
-            `,
-          }}
-        >
-          <Code2 className="inline-block w-5 h-5 md:w-7 md:h-7 mr-2 text-purple-400" />
-          Frontend Developer & Creative Coder
-        </h2>
+        {/* DESKTOP layout — 3-column: name+photo | divider | bio+contact */}
+        <div className="hidden md:grid md:grid-cols-[1fr_1px_1fr] lg:grid-cols-[420px_1px_1fr] gap-0 items-center min-h-0">
 
-        {/* Main content - Image and Text */}
-        <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-start max-w-6xl mx-auto">
-          {/* Image section with effects */}
-          <div className="space-y-6">
-            <div ref={imageRef} className="relative group max-w-xs ml-auto mr-8">
-              <div className="relative">
-                {/* Glowing border effect - blur reduzido */}
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 rounded-3xl blur-md opacity-40 group-hover:opacity-70 transition-opacity duration-500 animate-spin-slow" />
-                
-                {/* Image container */}
-                <div className="relative rounded-3xl overflow-hidden border-4 border-white/10 group-hover:border-white/30 transition-all duration-500">
-                  <img
-                    src={profileImg}
-                    alt="Laura Cordeiro"
-                    className="w-full h-auto relative z-10 transform group-hover:scale-105 transition-transform duration-700"
-                  />
-                  
-                  {/* Overlay gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-purple-900/50 via-transparent to-pink-900/30 opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
-                  
-                  {/* Scan line effect */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-500">
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white to-transparent h-1/4 animate-scan-line" />
-                  </div>
-                </div>
+          {/* ── LEFT: Name + Photo stacked ── */}
+          <div className="pr-8 lg:pr-12 flex flex-col gap-5">
 
-                {/* Floating icons around image - tamanho reduzido */}
-                <div className="absolute -top-3 -right-3 w-11 h-11 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-xl rotate-12 hover:rotate-0 hover:scale-110 transition-all duration-300 cursor-pointer z-20">
-                  <Code2 className="w-5 h-5 text-white" />
+            {/* Name block */}
+            <div ref={nameRef}>
+              {/* Eyebrow */}
+              <div className="role-badge inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-gray-400 text-xs font-medium tracking-widest uppercase mb-4">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+                FullStack Developer
+              </div>
+
+              {/* Large name — stacked lines, mixed fill/outline */}
+              <div className="leading-none space-y-1">
+                <div className="name-line text-[clamp(2.8rem,5vw,4.5rem)] font-black tracking-tight text-white">
+                  LAURA
                 </div>
-                <div className="absolute -bottom-3 -left-3 w-11 h-11 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center shadow-xl -rotate-12 hover:rotate-0 hover:scale-110 transition-all duration-300 cursor-pointer z-20">
-                  <Rocket className="w-5 h-5 text-white" />
+                <div
+                  className="name-line text-[clamp(2.8rem,5vw,4.5rem)] font-black tracking-tight"
+                  style={{
+                    WebkitTextStroke: '2px rgba(168,85,247,0.9)',
+                    color: 'transparent',
+                    textShadow: '0 0 40px rgba(168,85,247,0.3)',
+                  }}
+                >
+                  CORDEIRO
+                </div>
+                <div className="name-line text-[clamp(1rem,1.8vw,1.4rem)] font-semibold tracking-[0.25em] text-pink-400/80 uppercase mt-1">
+                  Creative Coder
                 </div>
               </div>
             </div>
 
-            {/* Contact Info - Minimalista abaixo da imagem */}
-            <div ref={contactCardsRef} className="space-y-2 max-w-xs ml-auto mr-8">{/* adicionado mr-8 também */}
+            {/* Photo */}
+            <div ref={imageRef} className="relative">
+              {/* Decorative frame lines */}
+              <div className="absolute -top-3 -left-3 w-12 h-12 border-t-2 border-l-2 border-purple-500/50 rounded-tl-xl pointer-events-none z-10" />
+              <div className="absolute -bottom-3 -right-3 w-12 h-12 border-b-2 border-r-2 border-pink-500/50 rounded-br-xl pointer-events-none z-10" />
+
+              {/* Glow behind image */}
+              <div className="absolute inset-4 bg-gradient-to-br from-purple-600/30 to-pink-600/20 rounded-2xl blur-2xl" />
+
+              <div className="relative overflow-hidden rounded-2xl border border-white/10 group">
+                <img
+                  src={profileImg}
+                  alt="Laura Cordeiro"
+                  className="w-full h-auto object-cover transform group-hover:scale-[1.03] transition-transform duration-700"
+                  style={{ maxHeight: '280px', objectPosition: 'top' }}
+                />
+                {/* Subtle color grade overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-purple-900/20 mix-blend-multiply" />
+                {/* Bottom shine on hover */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              </div>
+
+              {/* Floating badge — Code2 */}
+              <div className="absolute -top-2 -right-2 w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-xl shadow-purple-500/30 rotate-6 hover:rotate-0 hover:scale-110 transition-all duration-300 z-20 cursor-default">
+                <Code2 className="w-4.5 h-4.5 text-white" style={{ width: '1.1rem', height: '1.1rem' }} />
+              </div>
+              <div className="absolute -bottom-2 -left-2 w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center shadow-xl shadow-pink-500/30 -rotate-6 hover:rotate-0 hover:scale-110 transition-all duration-300 z-20 cursor-default">
+                <Rocket className="w-4 h-4 text-white" />
+              </div>
+            </div>
+
+            {/* Stats row */}
+            <div className="flex gap-3">
+              {[
+                { value: '3+', label: 'Anos Acadêmicos' },
+                { value: '1+', label: 'Ano Profissional' },
+                { value: '10+', label: 'Tecnologias' },
+              ].map((s) => (
+                <div key={s.label} className="stat-item flex-1 bg-white/[0.03] border border-white/[0.07] rounded-xl px-3 py-2.5 text-center hover:border-purple-500/30 transition-colors duration-300">
+                  <div className="text-xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{s.value}</div>
+                  <div className="text-[10px] text-gray-500 leading-tight mt-0.5">{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── DIVIDER ── */}
+          <div className="self-stretch bg-gradient-to-b from-transparent via-purple-500/30 to-transparent" />
+
+          {/* ── RIGHT: Bio + Contact ── */}
+          <div ref={rightRef} className="pl-8 lg:pl-12 flex flex-col gap-5">
+
+            {/* Bio blocks */}
+            <div className="space-y-4">
+              {[
+                {
+                  icon: Sparkles,
+                  iconColor: 'text-purple-400',
+                  title: 'Sobre Mim',
+                  text: <>Olá! Sou <span className="text-purple-400 font-semibold">Laura Cordeiro</span>, uma desenvolvedora fullstack apaixonada por criar experiências digitais que <span className="text-pink-400 font-semibold">surpreendem</span> e <span className="text-purple-400 font-semibold">encantam</span>. Minha missão é transformar ideias em interfaces interativas que superam expectativas.</>,
+                },
+                {
+                  icon: Code2,
+                  iconColor: 'text-pink-400',
+                  title: 'Minha Jornada',
+                  text: <>Com experiência em <span className="text-purple-400 font-semibold">React, TypeScript, GSAP e Three.js</span>, especializo-me em construir aplicações web modernas com animações avançadas. Acredito que código bem escrito é uma forma de arte — cada projeto é uma oportunidade de <span className="text-pink-400 font-semibold">criar algo único</span>.</>,
+                },
+                {
+                  icon: Heart,
+                  iconColor: 'text-pink-400',
+                  title: 'O Que Me Move',
+                  text: <>Adoro desafios que me permitem explorar os <span className="text-purple-400 font-semibold">limites do que é possível</span> na web. Seja criando animações imersivas ou otimizando performance, estou sempre em busca de <span className="text-pink-400 font-semibold">inovação e excelência</span>.</>,
+                },
+              ].map((block) => {
+                const Icon = block.icon;
+                return (
+                  <div key={block.title} className="bio-block group">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Icon className={`w-4 h-4 ${block.iconColor} flex-shrink-0`} />
+                      <h3 className="text-sm font-bold text-white tracking-wide uppercase">{block.title}</h3>
+                    </div>
+                    <p className="text-gray-400 text-sm leading-relaxed pl-6">{block.text}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Thin separator */}
+            <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+            {/* Contact chips — compact horizontal list */}
+            <div className="space-y-2">
+              <div className="text-[10px] uppercase tracking-[0.2em] text-gray-600 font-semibold mb-2">Contato</div>
               {contactInfo.map((info, index) => {
                 const Icon = info.icon;
                 const isCopied = copiedIndex === index;
-                
                 return (
                   <div
                     key={info.label}
-                    className="contact-card group relative"
+                    className="contact-chip flex items-center gap-3 group px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-white/20 hover:bg-white/[0.06] transition-all duration-300"
                   >
-                    <div className="flex items-center gap-2 bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 hover:border-white/20 rounded-lg px-3 py-2 transition-all duration-300">
-                      {/* Icon */}
-                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${info.color} flex items-center justify-center flex-shrink-0`}>
-                        <Icon className="w-4 h-4 text-white" />
-                      </div>
-                      
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold">{info.label}</div>
+                    {/* Color dot */}
+                    <div
+                      className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ background: `linear-gradient(135deg, ${info.accent}40, ${info.accent}20)`, border: `1px solid ${info.accent}30` }}
+                    >
+                      <Icon className="w-3.5 h-3.5" style={{ color: info.accent }} />
+                    </div>
+
+                    {/* Label + value */}
+                    <div className="flex-1 min-w-0 flex items-center gap-2">
+                      <span className="text-[10px] text-gray-600 uppercase tracking-wider font-medium w-16 flex-shrink-0">{info.label}</span>
+                      {info.href ? (
                         <a
-                          href={info.href || '#'}
-                          onClick={(e) => {
-                            if (!info.href) {
-                              e.preventDefault();
-                            }
-                          }}
-                          className="text-xs text-white font-medium hover:text-purple-400 transition-colors truncate block"
+                          href={info.href}
+                          target={info.href.startsWith('http') ? '_blank' : undefined}
+                          rel="noopener noreferrer"
+                          className="text-xs text-gray-300 hover:text-white transition-colors truncate font-medium"
                         >
                           {info.displayValue}
                         </a>
-                      </div>
+                      ) : (
+                        <span className="text-xs text-gray-300 truncate font-medium">{info.displayValue}</span>
+                      )}
+                    </div>
 
-                      {/* Action buttons */}
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        {info.href && (
-                          <a
-                            href={info.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-7 h-7 rounded-md bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-300 hover:scale-110"
-                            title={info.label === 'GitHub' ? 'Acessar' : 'Contatar'}
-                          >
-                            <Send className="w-3 h-3 text-white/90" />
-                          </a>
-                        )}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCopy(info.value, index);
-                          }}
-                          className="w-7 h-7 rounded-md bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-300 hover:scale-110"
-                          title="Copiar"
+                    {/* Actions */}
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      {info.href && (
+                        <a
+                          href={info.href}
+                          target={info.href.startsWith('http') ? '_blank' : undefined}
+                          rel="noopener noreferrer"
+                          className="w-6 h-6 rounded-md bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
                         >
-                          {isCopied ? (
-                            <Check className="w-3 h-3 text-green-400" />
-                          ) : (
-                            <Copy className="w-3 h-3 text-white/90" />
-                          )}
-                        </button>
-                      </div>
+                          <Send className="w-2.5 h-2.5 text-white/70" />
+                        </a>
+                      )}
+                      <button
+                        onClick={() => handleCopy(info.value, index)}
+                        className="w-6 h-6 rounded-md bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                      >
+                        {isCopied
+                          ? <Check className="w-2.5 h-2.5 text-green-400" />
+                          : <Copy className="w-2.5 h-2.5 text-white/70" />
+                        }
+                      </button>
                     </div>
                   </div>
                 );
               })}
             </div>
           </div>
-
-          {/* Text section */}
-          <div ref={textRef} className="space-y-5">
-            <div className="text-paragraph">
-              <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="w-6 h-6 text-purple-400" />
-                <h3 className="text-xl md:text-2xl font-bold text-white">Sobre Mim</h3>
-              </div>
-              <p className="text-gray-300 text-sm md:text-base leading-relaxed">
-                Olá! Sou <span className="text-purple-400 font-bold">Laura Cordeiro</span>, uma desenvolvedora 
-                frontend apaixonada por criar experiências digitais que <span className="text-pink-400 font-bold">surpreendem</span> e 
-                <span className="text-purple-400 font-bold"> encantam</span>. Minha missão é transformar ideias 
-                em interfaces interativas e funcionais que não apenas atendem às necessidades, mas superam expectativas.
-              </p>
-            </div>
-
-            <div className="text-paragraph">
-              <div className="flex items-center gap-2 mb-3">
-                <Code2 className="w-6 h-6 text-pink-400" />
-                <h3 className="text-xl md:text-2xl font-bold text-white">Minha Jornada</h3>
-              </div>
-              <p className="text-gray-300 text-sm md:text-base leading-relaxed">
-                Com experiência em <span className="text-purple-400 font-bold">React, TypeScript, GSAP e Three.js</span>, 
-                especializo-me em construir aplicações web modernas com animações avançadas e design inovador. 
-                Acredito que código bem escrito é uma forma de arte, e cada projeto é uma oportunidade de 
-                <span className="text-pink-400 font-bold"> criar algo único</span> e memorável.
-              </p>
-            </div>
-
-            <div className="text-paragraph">
-              <div className="flex items-center gap-2 mb-3">
-                <Heart className="w-6 h-6 text-pink-400" />
-                <h3 className="text-xl md:text-2xl font-bold text-white">O Que Me Move</h3>
-              </div>
-              <p className="text-gray-300 text-sm md:text-base leading-relaxed">
-                Adoro desafios que me permitem explorar os <span className="text-purple-400 font-bold">limites do que é possível</span> na web. 
-                Seja criando animações imersivas, desenvolvendo interfaces responsivas ou otimizando performance, 
-                estou sempre em busca de <span className="text-pink-400 font-bold">inovação e excelência</span>. 
-                Quando não estou codando, estou aprendendo novas tecnologias e me inspirando em design e arte digital.
-              </p>
-            </div>
-
-            {/* Stats badges */}
-            <div className="flex flex-wrap gap-3 pt-4">
-              <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl px-4 py-2 backdrop-blur-sm">
-                <div className="text-purple-400 font-bold text-base">3+</div>
-                <div className="text-gray-400 text-xs leading-tight">Anos de Experiência<br/>em Projetos Acadêmicos</div>
-              </div>
-              <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 rounded-xl px-4 py-2 backdrop-blur-sm">
-                <div className="text-pink-400 font-bold text-base">1+</div>
-                <div className="text-gray-400 text-xs leading-tight">Anos de Experiência<br/>Profissional</div>
-              </div>
-              <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-xl px-4 py-2 backdrop-blur-sm">
-                <div className="text-blue-400 font-bold text-base">10+</div>
-                <div className="text-gray-400 text-xs">Tecnologias</div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
       <style>{`
-        @keyframes gradient-shift {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-
         @keyframes grid-move {
           0% { transform: translateY(0); }
-          100% { transform: translateY(50px); }
-        }
-
-        @keyframes spin-slow {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-
-        @keyframes scan-line {
-          0% { top: 0%; }
-          100% { top: 100%; }
-        }
-
-        @keyframes border-spin {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-
-        .animate-spin-slow {
-          animation: spin-slow 8s linear infinite;
-        }
-
-        .animate-scan-line {
-          animation: scan-line 3s ease-in-out infinite;
-        }
-
-        .animate-border-spin {
-          animation: border-spin 3s linear infinite;
+          100% { transform: translateY(48px); }
         }
       `}</style>
     </section>

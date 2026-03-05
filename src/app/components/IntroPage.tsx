@@ -349,7 +349,7 @@ export default function IntroPage({ onEnter }: IntroPageProps) {
           LAURA CORDEIRO
         </h1>
         <p className="intro-subtitle text-xl md:text-3xl mb-16 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent font-bold pointer-events-auto">
-          Frontend Developer
+          FullStack Developer
         </p>
         <button
           ref={buttonRef}
