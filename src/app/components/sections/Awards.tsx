@@ -117,6 +117,7 @@ export default function Awards() {
         {/* === LISTA DE CARDS COMPACTA === */}
         <div
           ref={cardsRef}
+          data-scrollable="true"
           className="grid grid-cols-1 gap-3 md:gap-4 w-full max-w-3xl mx-auto max-h-[calc(100vh-180px)] overflow-y-auto px-2 pb-4 scrollbar-hide"
         >
           {awards.map((award) => {

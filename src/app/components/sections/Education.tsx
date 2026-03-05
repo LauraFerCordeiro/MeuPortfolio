@@ -103,6 +103,7 @@ export default function Education() {
         {/* Timeline */}
         <div
           ref={timelineRef}
+          data-scrollable="true" // <-- ADICIONE ESTA LINHA AQUI
           className="relative max-h-[calc(100vh-180px)] md:max-h-[calc(100vh-240px)] overflow-y-auto px-2 md:px-4 pb-4 scrollbar-hide"
         >
           {/* Main Education Card */}

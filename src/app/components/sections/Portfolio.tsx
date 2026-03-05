@@ -241,7 +241,7 @@ export default function Portfolio() {
         </div>
 
         {/* GitHub Link */}
-        <div className="flex justify-center">
+        <div className="flex justify-center mt-6 md:mt-0">
           <a
             href="https://github.com/LauraFerCordeiro"
             target="_blank"
