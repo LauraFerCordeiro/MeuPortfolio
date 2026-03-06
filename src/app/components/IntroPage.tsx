@@ -8,8 +8,7 @@ interface IntroPageProps {
 
 export default function IntroPage({ onEnter }: IntroPageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
+const sceneRef = useRef<THREE.Scene | null>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
   const scrollTimeoutRef = useRef<number | null>(null);
   const touchStartRef = useRef({ x: 0, y: 0 });
@@ -142,10 +141,6 @@ export default function IntroPage({ onEnter }: IntroPageProps) {
 
     gsap.from('.intro-subtitle', { opacity: 0, scale: 0, duration: 1, delay: 1, ease: 'elastic.out(1, 0.5)' });
 
-    if (buttonRef.current) {
-      gsap.from(buttonRef.current, { opacity: 0, y: 50, duration: 1, delay: 1.5, ease: 'power3.out' });
-      gsap.to(buttonRef.current, { y: -10, duration: 2, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 2 });
-    }
 
     const handleResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -219,18 +214,13 @@ export default function IntroPage({ onEnter }: IntroPageProps) {
 
   return (
     <div
-      className="relative w-full h-screen bg-black overflow-hidden touch-none"
+      className="relative w-full bg-black overflow-hidden touch-none"
+      style={{ height: '100dvh' }}  
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       <canvas ref={canvasRef} className="absolute inset-0" />
       
-      {/*
-        Mobile: flex-col com justify-between + padding top/bottom garante que
-        o texto "Clique para entrar" fique sempre visível no fundo,
-        independente do tamanho da tela.
-        Desktop: mantém o layout centralizado com o texto absolute bottom-10.
-      */}
       <div className="intro-content absolute inset-0 flex flex-col items-center justify-between md:justify-center text-white z-10 px-4 pointer-events-none pt-[15vh] pb-10 md:pt-0 md:pb-0">
         
         <div className="flex flex-col items-center md:block">
@@ -240,16 +230,7 @@ export default function IntroPage({ onEnter }: IntroPageProps) {
           <p className="intro-subtitle text-xl md:text-3xl mb-16 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent font-bold pointer-events-auto text-center">
             FullStack Developer
           </p>
-          <button
-            ref={buttonRef}
-            onClick={handleEnter}
-            className="group relative px-10 py-5 text-lg font-bold border-2 border-white rounded-full overflow-hidden transition-all duration-300 hover:border-purple-500 hover:scale-110 cursor-pointer pointer-events-auto"
-          >
-            <span className="relative z-10 group-hover:text-black transition-colors duration-300">
-              Entrar no Portfólio →
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
-          </button>
+
         </div>
 
         {/* Texto sempre visível: no fluxo normal no mobile, absolute no desktop */}
